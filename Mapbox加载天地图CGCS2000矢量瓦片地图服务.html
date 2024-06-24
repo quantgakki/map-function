@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset='utf-8' />
+		<title>Mapbox加载天地图CGCS2000矢量瓦片地图服务</title>
+		<meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+
+		<script src='https://api.mapbox.com/mapbox-gl-js/v2.11.0/mapbox-gl.js'></script>
+		<link href='https://api.mapbox.com/mapbox-gl-js/v2.11.0/mapbox-gl.css' rel='stylesheet' />
+
+		<style>
+			body {
+				margin: 0;
+				padding: 0;
+			}
+
+			#map {
+				position: absolute;
+				top: 0;
+				bottom: 0;
+				width: 100%;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div id='map'></div>
+	</body>
+	<script>
+		mapboxgl.accessToken = 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXFhYTA2bTMyeW44ZG0ybXBkMHkifQ.gUGbDOPUN1v1fTs5SeOR4A';
+		//天地图
+		// var vecUrl = "http://t0.tianditu.com/img_w/wmts?tk=64a7440068a2bbc276c11927b54458f4";
+		// var cvaUrl = "http://t0.tianditu.com/cva_w/wmts?tk=64a7440068a2bbc276c11927b54458f4";
+		var imgUrl = "https://t" + Math.floor(Math.random() * 7) +
+			".tianditu.gov.cn/DataServer?T=img_w&X={x}&Y={y}&L={z}&tk=5ef21fa556102c4b65d390618f60fd89"
+		var imgCav = "https://t" + Math.floor(Math.random() * 7) +
+			".tianditu.gov.cn/DataServer?T=cia_w&X={x}&Y={y}&L={z}&tk=64a7440068a2bbc276c11927b54458f4"
+		//使用严格模式
+		"use strict";
+		//实例化source对象
+		var imgUrl = {
+			//类型为栅格瓦片
+			"type": "raster",
+			'tiles': [
+				imgUrl
+				//请求地址
+				// vecUrl + "&SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=vec&STYLE=default&TILEMATRIXSET=w&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&FORMAT=tiles"
+			],
+			//分辨率
+			'tileSize': 256
+		};
+		var imgCav = {
+			"type": "raster",
+			'tiles': [
+				imgCav
+				// cvaUrl + "&SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=cva&STYLE=default&TILEMATRIXSET=w&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&FORMAT=tiles"
+			],
+			'tileSize': 256
+		};
+		//实例化Map地图对象
+		var map = new mapboxgl.Map({
+			//地图容器div的id
+			container: 'map',
+			style: {
+				//设置版本号，一定要设置
+				"version": 8,
+				"projection": {
+					"name": "globe"
+				},
+				//添加来源
+				"sources": {
+					"imgUrl": imgUrl,
+					"imgCav": imgCav
+				},
+				"layers": [{
+						//图层id，要保证唯一性
+						"id": "imgUrl",
+						//图层类型
+						"type": "raster",
+						//数据源
+						"source": "imgUrl",
+						//图层最小缩放级数
+						"minzoom": 0,
+						//图层最大缩放级数
+						"maxzoom": 17
+					},
+					{
+						"id": "imgCav",
+						"type": "raster",
+						"source": "imgCav",
+						"minzoom": 0,
+						"maxzoom": 17
+					}
+				],
+			},
+			//地图中心点
+			center: [116.405419, 39.914714],
+			//地图当前缩放级数
+			zoom: 10
+		});
+		//实例化导航控件
+		var nav = new mapboxgl.NavigationControl({
+			//是否显示指南针，默认为true
+			"showCompass": true,
+			//是否显示缩放按钮，默认为true
+			"showZoom": true
+		});
+		//添加导航控件，控件的位置包括'top-left', 'top-right','bottom-left' ,'bottom-right'四种，默认为'top-right'
+		map.addControl(nav, 'top-left');
+	</script>
+</html>

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <title>mapbox加载wms服务</title>
+  <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+
+  <script src="https://api.mapbox.com/mapbox-gl-js/v2.11.0/mapbox-gl.js"></script>
+  <link href="https://api.mapbox.com/mapbox-gl-js/v2.11.0/mapbox-gl.css" rel="stylesheet" />
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+    }
+
+    #map {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 100%;
+    }
+
+    a.mapboxgl-ctrl-logo {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="map"></div>
+</body>
+<script>
+  mapboxgl.accessToken =
+    "pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXFhYTA2bTMyeW44ZG0ybXBkMHkifQ.gUGbDOPUN1v1fTs5SeOR4A";
+  //天地图
+  var imgUrl =
+    'https://t' + Math.floor(Math.random() * 7) + '.tianditu.gov.cn/DataServer?T=img_w&X={x}&Y={y}&L={z}&tk=64a7440068a2bbc276c11927b54458f4'
+  var imgCav =
+    'https://t' + Math.floor(Math.random() * 7) + '.tianditu.gov.cn/DataServer?T=cia_w&X={x}&Y={y}&L={z}&tk=64a7440068a2bbc276c11927b54458f4'
+  //实例化source对象
+  var imgUrl = {
+    //类型为栅格瓦片
+    type: "raster",
+    tiles: [imgUrl],
+    //分辨率
+    tileSize: 256,
+  };
+  var imgCav = {
+    type: "raster",
+    tiles: [imgCav],
+    tileSize: 256,
+  };
+  //实例化Map地图对象
+  var map = new mapboxgl.Map({
+    //地图容器div的id
+    container: "map",
+    style: 'mapbox://styles/mapbox/streets-v12',
+    style: {
+      fog: {
+        range: [2, 20],
+        color: "hsl(0, 0%, 100%)",
+        "high-color": "hsl(210, 100%, 80%)",
+        "space-color": [
+          "interpolate",
+          ["exponential", 1.2],
+          ["zoom"],
+          5,
+          "hsl(210, 40%, 30%)",
+          7,
+          "hsl(210, 100%, 80%)",
+        ],
+        "horizon-blend": [
+          "interpolate",
+          ["exponential", 1.2],
+          ["zoom"],
+          5,
+          0.02,
+          7,
+          0.08,
+        ],
+        "star-intensity": [
+          "interpolate",
+          ["exponential", 1.2],
+          ["zoom"],
+          5,
+          0.1,
+          7,
+          0,
+        ],
+      },
+      //设置版本号，一定要设置
+      version: 8,
+      projection: {
+        name: "globe",
+      },
+      //添加来源
+      sources: {
+        imgUrl: imgUrl,
+        imgCav: imgCav,
+      },
+      layers: [
+        {
+          //图层id，要保证唯一性
+          id: "imgUrl",
+          //图层类型
+          type: "raster",
+          //数据源
+          source: "imgUrl",
+          //图层最小缩放级数
+          minzoom: 0,
+          //图层最大缩放级数
+          maxzoom: 17,
+        },
+        {
+          id: "imgCav",
+          type: "raster",
+          source: "imgCav",
+          minzoom: 0,
+          maxzoom: 17,
+        },
+      ],
+    },
+    //地图中心点
+    center: [108.06590205, 41.17608996],
+    // center: [-74.5447, 40.6892],
+    //地图当前缩放级数
+    zoom: 8,
+  });
+  map.on('load', () => {
+    // 添加wms服务
+    map.addSource('wms-test-source', {
+      type: 'raster',
+      tiles: [
+        // "https://img.nj.gov/imagerywms/Natural2015?bbox={bbox-epsg-3857}&format=image/png&service=WMS&version=1.1.1&request=GetMap&srs=EPSG:3857&transparent=true&width=256&height=256&layers=Natural2015",
+        'https://spacemap.cn/geoserver/sltt/wms?request=GetMap&srs=EPSG:3857&width=256&height=256&bbox={bbox-epsg-3857}&layers=sltt:data_goods&format=image/png&transparent=true'
+      ],
+      tileSize: 256,
+    })
+    map.addLayer(
+      {
+        id: 'wms-test-source',
+        type: 'raster',
+        source: 'wms-test-source',
+        paint: {},
+      },
+      // 'building' // Place layer under labels, roads and buildings.
+    )
+  })
+  //实例化导航控件
+  var nav = new mapboxgl.NavigationControl({
+    //是否显示指南针，默认为true
+    showCompass: true,
+    //是否显示缩放按钮，默认为true
+    showZoom: true,
+    // 是否通过旋转指南针的X轴来可视化螺距
+    visualizePitch: true
+  });
+  //添加导航控件，控件的位置包括'top-left', 'top-right','bottom-left' ,'bottom-right'四种，默认为'top-right'
+  map.addControl(nav, "top-left");
+
+  
+</script>
+
+</html>

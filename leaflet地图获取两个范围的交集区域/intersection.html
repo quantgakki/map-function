@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>intersection</title>
+    <script type="text/javascript" src="./leaflet-src.js"></script>
+    <script src="./turf/turf.min.js"></script>
+    <link rel="stylesheet" href="./leaflet.css" />
+    <style>
+      * {
+        margin: 0;
+      }
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+      }
+      .map {
+        width: 100%;
+        height: 100%;
+        position: relative;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="map" id="map"></div>
+  </body>
+
+  <script>
+    // 创建地图
+    var map = L.map("map", {
+      center: [33.827107, 108.240601],
+      zoom: 7,
+      zoomControl: false,
+      attributionControl: false,
+    });
+    let tk = "5ef21fa556102c4b65d390618f60fd89";
+    L.tileLayer(
+      "https://t{s}.tianditu.gov.cn/DataServer?T=img_w&X={x}&Y={y}&L={z}&tk=" +
+        tk,
+      {
+        subdomains: ["0", "1", "2", "3", "4", "5", "6", "7"],
+      }
+    ).addTo(map);
+    L.tileLayer(
+      "https://t{s}.tianditu.gov.cn/DataServer?T=cia_w&X={x}&Y={y}&L={z}&tk=" +
+        tk,
+      {
+        subdomains: ["0", "1", "2", "3", "4", "5", "6", "7"],
+      }
+    ).addTo(map);
+    var newLayerGroup = null;
+    newLayerGroup = L.layerGroup().addTo(map);
+
+    var geom1 = null;
+    var geom2 = [
+      [
+        [108.796955273, 34.789637624],
+        [109.359182112, 34.707243213],
+        [109.242181375, 34.247929604],
+        [108.68311931, 34.330095869],
+        [108.796955273, 34.789637624],
+      ],
+    ];
+
+    var httpRequest = new XMLHttpRequest(); //第一步：建立所需的对象
+    httpRequest.open(
+      "GET",
+      "https://spacemapcloud.cn/sl-data/rest/v1/data/sysGeo/getByCode/610100",
+      true
+    ); //第二步：打开连接  将请求参数写在url中  ps:"./Ptest.php?name=test&nameone=testone"
+    httpRequest.send(); //第三步：发送请求  将请求参数写在URL中
+    httpRequest.onreadystatechange = function (e) {
+      if (httpRequest.readyState == 4 && httpRequest.status == 200) {
+        console.log(JSON.parse(httpRequest.responseText));
+        var json = JSON.parse(httpRequest.responseText); //获取到json字符串，还需解析
+        let arr =geom1 = json.coordinates[0];
+        arr[0].forEach((item) => {
+          item.reverse();
+        });
+        let layer = L.polyline(arr, {
+          color: "#0ff",
+          weight: 2,
+          pane: "tilePane",
+        }).addTo(newLayerGroup);
+
+        geom2[0].map((j) => {
+          j.reverse();
+        });
+        let newLayer = L.polyline(geom2, {
+          color: "#99ff00",
+          weight: 2,
+        }).addTo(newLayerGroup);
+
+
+
+
+        var intersection = turf.intersect(turf.polygon(geom1), turf.polygon(geom2));
+        var area = turf.area(intersection);
+        console.log('intersection',area);
+        let arr1 = intersection.geometry.coordinates[0];
+
+         L.polyline(arr1, {
+          color: "red",
+          weight: 5,
+          pane: "tilePane",
+        }).addTo(newLayerGroup);
+      }
+    };
+  </script>
+</html>
